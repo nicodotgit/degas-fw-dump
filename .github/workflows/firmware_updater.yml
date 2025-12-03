@@ -1,0 +1,272 @@
+name: 'Degas Firmware Dumper'
+
+on:
+  push:
+    paths:
+      - 'firmware_updates/*.txt'
+  
+  workflow_dispatch:
+
+jobs:
+  process_firmware_files:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      matrix:
+        region: [global, eea, ru, id, tw, tr, global_dc]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Cache Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            /var/cache/apt
+            /var/lib/apt
+          key: ${{ runner.os }}-apt-${{ hashFiles('**/firmware_updater.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-apt-
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y aria2 tree pigz python3
+
+      - name: Read Firmware Info and Select Fastest URL
+        id: firmware_info
+        run: |
+          FILE_PATH="firmware_updates/${{ matrix.region }}.txt"
+          if [ ! -f "$FILE_PATH" ]; then
+            echo "File for region ${{ matrix.region }} not found. Skipping."
+            exit 0
+          fi
+          
+          VERSION=$(sed -n '1p' "$FILE_PATH" | tr -d '[:space:]')
+          DOWNLOAD_URLS=($(sed '1d' "$FILE_PATH"))
+
+          if [ ${#DOWNLOAD_URLS[@]} -eq 0 ]; then
+             echo "ERROR: No download URLs found in ${FILE_PATH}."
+             exit 1
+          elif [ ${#DOWNLOAD_URLS[@]} -eq 1 ]; then
+             FASTEST_URL="${DOWNLOAD_URLS[0]}"
+             echo "Only one URL found. Skipping speed-test."
+          else
+             echo "Multiple URLs found. Starting speed-test..."
+             FASTEST_URL=""
+             MAX_SPEED=0
+             MAX_TEST_TIME=5
+             TEST_SIZE_BYTES=20971520
+
+             for URL in "${DOWNLOAD_URLS[@]}"; do
+                echo "Testing URL: $URL (Timeout: ${MAX_TEST_TIME}s, Size: 10MB)"
+                SPEED=$(curl -L --connect-timeout 5 --max-time $MAX_TEST_TIME --range 0-$TEST_SIZE_BYTES -s -o /dev/null -w "%{speed_download}" "$URL" | cut -d'.' -f1)
+                
+                if [ -z "$SPEED" ] || [ "$SPEED" -eq 0 ]; then
+                  echo "Test failed, timed out, or speed was 0. Skipping this URL."
+                  continue
+                fi
+
+                SPEED_MBPS=$(awk -v speed_bps="$SPEED" 'BEGIN { printf "%.2f", speed_bps * 8 / 1024 / 1024 }')
+                echo "Result: ${SPEED_MBPS} Mbps"
+
+                if (( SPEED > MAX_SPEED )); then
+                   MAX_SPEED=$SPEED
+                   FASTEST_URL=$URL
+                fi
+             done
+          fi
+
+          if [ -z "$FASTEST_URL" ]; then
+            echo "ERROR: Could not determine the fastest URL. All speed-tests may have failed."
+            exit 1
+          fi
+
+          echo "Fastest URL selected: ${FASTEST_URL}"
+          FILENAME=$(basename "${FASTEST_URL}")
+
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+          echo "FILENAME=${FILENAME}" >> $GITHUB_OUTPUT
+          echo "DOWNLOAD_URL=${FASTEST_URL}" >> $GITHUB_OUTPUT
+          echo "DATA_FOUND=true" >> $GITHUB_OUTPUT
+
+      - name: Check if Release Already Exists
+        if: steps.firmware_info.outputs.DATA_FOUND == 'true'
+        id: check_release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="v${{ steps.firmware_info.outputs.VERSION }}-${{ matrix.region }}"
+          if gh release view "$TAG" --json name >/dev/null 2>&1; then
+            echo "Release ${TAG} already exists. Stopping."
+            echo "IS_NEW=false" >> $GITHUB_OUTPUT
+          else
+            echo "Release ${TAG} is new. Proceeding."
+            echo "IS_NEW=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Free up disk space on runner
+        if: steps.check_release.outputs.IS_NEW == 'true'
+        run: |
+          echo "Freeing up disk space..."
+          df -h
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL \
+                      /opt/hostedtoolcache/go /opt/hostedtoolcache/Python /opt/hostedtoolcache/Ruby \
+                      /opt/hostedtoolcache/Java "$AGENT_TOOLSDIRECTORY" 2>/dev/null || true
+          docker system prune -af 2>/dev/null || true
+          sudo apt-get clean
+          echo "Disk space after cleanup:"
+          df -h
+
+      - name: Download and Extract Firmware
+        if: steps.check_release.outputs.IS_NEW == 'true'
+        run: |
+          echo "Downloading ${{ steps.firmware_info.outputs.FILENAME }} with aria2..."
+          aria2c -x 16 -s 16 -k 1M -o "${{ steps.firmware_info.outputs.FILENAME }}" "${{ steps.firmware_info.outputs.DOWNLOAD_URL }}"
+          echo "Extracting files with parallel decompression..."
+          mkdir -p extracted_firmware
+          tar -I pigz -xvf "${{ steps.firmware_info.outputs.FILENAME }}" -C extracted_firmware
+          echo "Handling large files..."
+          find extracted_firmware -type f -size +2000M | while read -r file; do
+            echo "Splitting large file: $file"
+            split -b 2000M "$file" "$file.part-"
+            rm -f "$file"
+          done
+          rm -f "${{ steps.firmware_info.outputs.FILENAME }}"
+
+      - name: Extract Firmware Metadata
+        if: steps.check_release.outputs.IS_NEW == 'true'
+        id: metadata
+        run: |
+          VERSION="${{ steps.firmware_info.outputs.VERSION }}"
+          FILENAME="${{ steps.firmware_info.outputs.FILENAME }}"
+          
+          # Extract metadata from filename (format: degas_region_images_VERSION_BUILDDATE_ANDROIDVERSION_region_hash.tgz)
+          if [[ "$FILENAME" =~ _([0-9]{8}\.[0-9]{4}\.[0-9]{2})_([0-9]+\.[0-9]+)_ ]]; then
+            BUILD_DATE="${BASH_REMATCH[1]}"
+            ANDROID_VERSION="${BASH_REMATCH[2]}"
+            FORMATTED_DATE=$(echo "$BUILD_DATE" | sed 's/\([0-9]\{4\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)\.\([0-9]\{4\}\)\.\([0-9]\{2\}\)/\1-\2-\3 \4:\5/')
+          else
+            BUILD_DATE="Unknown"
+            ANDROID_VERSION="Unknown"
+            FORMATTED_DATE="Unknown"
+          fi
+          
+          echo "BUILD_DATE=${FORMATTED_DATE}" >> $GITHUB_OUTPUT
+          echo "ANDROID_VERSION=${ANDROID_VERSION}" >> $GITHUB_OUTPUT
+          
+          # Try to extract kernel version from boot.img if available
+          KERNEL_VERSION="Unknown"
+          if [ -f "extracted_firmware/boot.img" ]; then
+            KERNEL_INFO=$(strings extracted_firmware/boot.img | grep -m 1 "Linux version" || echo "")
+            if [ -n "$KERNEL_INFO" ]; then
+              KERNEL_VERSION=$(echo "$KERNEL_INFO" | sed -n 's/.*Linux version \([^ ]*\).*/\1/p')
+            fi
+          fi
+          echo "KERNEL_VERSION=${KERNEL_VERSION}" >> $GITHUB_OUTPUT
+          
+          # Extract HyperOS/MIUI version from build.prop if available
+          HYPEROS_VERSION="Unknown"
+          if [ -f "extracted_firmware/images/system.img" ] || [ -f "extracted_firmware/images/system.img.part-aa" ]; then
+            echo "Note: system.img found but requires mounting to extract build.prop"
+          fi
+          
+          # Parse version components
+          if [[ "$VERSION" =~ ^([A-Z]+)([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.([A-Z]+)$ ]]; then
+            HYPEROS_VERSION="${BASH_REMATCH[1]}${BASH_REMATCH[2]}"
+            VERSION_CODE="${BASH_REMATCH[3]}"
+          fi
+          echo "HYPEROS_VERSION=${HYPEROS_VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release and Upload Files
+        if: steps.check_release.outputs.IS_NEW == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          VERSION="${{ steps.firmware_info.outputs.VERSION }}"
+          REGION_UPPER=$(echo "${{ matrix.region }}" | tr 'a-z' 'A-Z')
+          TAG="v${VERSION}-${{ matrix.region }}"
+          
+          tree -F extracted_firmware > extracted_firmware/file_structure.txt
+          
+          TOTAL_SIZE=$(du -sh extracted_firmware | awk '{print $1}')
+          FILE_COUNT=$(find extracted_firmware -type f | wc -l)
+          DUMP_DATE=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+
+          RELEASE_NOTES=$(cat <<EOF
+          ## 📦 Firmware Information
+          
+          - **Version:** ${VERSION}
+          - **Region:** ${REGION_UPPER}
+          - **HyperOS Version:** ${{ steps.metadata.outputs.HYPEROS_VERSION }}
+          - **Android Version:** ${{ steps.metadata.outputs.ANDROID_VERSION }}
+          - **Build Date:** ${{ steps.metadata.outputs.BUILD_DATE }}
+          - **Kernel Version:** ${{ steps.metadata.outputs.KERNEL_VERSION }}
+          
+          ## 📊 Package Details
+          
+          - **Total Size:** ${TOTAL_SIZE}
+          - **File Count:** ${FILE_COUNT}
+          - **Dump Date:** ${DUMP_DATE}
+          - **Codename:** degas (Xiaomi 14T)
+          
+          ## 🔗 Source
+          
+          Downloaded from: ${{ steps.firmware_info.outputs.DOWNLOAD_URL }}
+          
+          ---
+          
+          📄 A complete file list and directory structure is available in the \`file_structure.txt\` asset attached below.
+          EOF
+          )
+
+          echo "Creating release with tag: ${TAG}"
+          gh release create "$TAG" \
+            --title "🚀 ${VERSION} [${REGION_UPPER}]" \
+            --notes "$RELEASE_NOTES" \
+            $(find extracted_firmware -type f)
+
+  update_readme:
+    needs: process_firmware_files
+    runs-on: ubuntu-latest
+    if: success() || failure()
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Update Firmware Index in README
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 .github/scripts/update_firmware_index.py
+
+      - name: Commit and Push README Changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          # Check if there are changes
+          if git diff --quiet README.md; then
+            echo "ℹ️  No changes to README.md"
+            exit 0
+          fi
+          
+          # Pull latest changes before pushing
+          git pull --rebase origin main || true
+          
+          # Commit and push
+          git add README.md
+          git commit -m "📝 Update firmware index [skip ci]"
+          git push origin main
+          echo "✅ README.md updated and pushed"

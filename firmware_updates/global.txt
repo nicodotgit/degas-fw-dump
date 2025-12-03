@@ -1,0 +1,4 @@
+V816.0.6.0.UNEMIXM
+https://bigota.d.miui.com/OS1.0.6.0.UNEMIXM/degas_global_images_OS1.0.6.0.UNEMIXM_20240912.0000.00_14.0_global_6bd26d7ea8.tgz
+https://hugeota.d.miui.com/OS1.0.6.0.UNEMIXM/degas_global_images_OS1.0.6.0.UNEMIXM_20240912.0000.00_14.0_global_6bd26d7ea8.tgz
+https://bn.d.miui.com/OS1.0.6.0.UNEMIXM/degas_global_images_OS1.0.6.0.UNEMIXM_20240912.0000.00_14.0_global_6bd26d7ea8.tgz

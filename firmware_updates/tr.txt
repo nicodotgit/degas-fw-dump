@@ -1,0 +1,4 @@
+V816.0.2.0.UNETRXM
+https://bigota.d.miui.com/OS1.0.2.0.UNETRXM/degas_tr_global_images_OS1.0.2.0.UNETRXM_20240820.0000.00_14.0_tr_2d18b7bfd3.tgz
+https://hugeota.d.miui.com/OS1.0.2.0.UNETRXM/degas_tr_global_images_OS1.0.2.0.UNETRXM_20240820.0000.00_14.0_tr_2d18b7bfd3.tgz
+https://bn.d.miui.com/OS1.0.2.0.UNETRXM/degas_tr_global_images_OS1.0.2.0.UNETRXM_20240820.0000.00_14.0_tr_2d18b7bfd3.tgz
