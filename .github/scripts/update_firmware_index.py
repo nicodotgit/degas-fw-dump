@@ -14,10 +14,19 @@ def get_all_releases():
     result = run(
         ['gh', 'release', 'list', '--limit', '1000', '--json', 'tagName,name,createdAt,url'],
         capture_output=True,
-        text=True,
-        check=True
+        text=True
     )
-    return json.loads(result.stdout)
+    
+    if result.returncode != 0:
+        # If gh fails (e.g., no releases yet), return empty list
+        if 'no releases found' in result.stderr.lower() or 'not found' in result.stderr.lower():
+            print("ℹ️  No releases found yet in repository")
+            return []
+        else:
+            print(f"❌ gh CLI error: {result.stderr}")
+            raise RuntimeError(f"Failed to fetch releases: {result.stderr}")
+    
+    return json.loads(result.stdout) if result.stdout.strip() else []
 
 def parse_tag(tag):
     """Parse release tag to extract version and region"""
@@ -125,6 +134,11 @@ def main():
         print("Fetching releases from GitHub...")
         releases = get_all_releases()
         print(f"Found {len(releases)} releases")
+        
+        if len(releases) == 0:
+            print("ℹ️  No releases found. Skipping README update.")
+            print("   The index will be populated after the first release is created.")
+            return
         
         print("Generating firmware index...")
         index_content = generate_firmware_index(releases)
