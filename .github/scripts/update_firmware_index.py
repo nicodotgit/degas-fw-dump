@@ -12,7 +12,7 @@ from subprocess import run, PIPE
 def get_all_releases():
     """Fetch all releases from GitHub"""
     result = run(
-        ['gh', 'release', 'list', '--limit', '1000', '--json', 'tagName,name,createdAt,url'],
+        ['gh', 'release', 'list', '--limit', '1000', '--json', 'tagName,name,createdAt'],
         capture_output=True,
         text=True
     )
@@ -52,7 +52,7 @@ def generate_firmware_index(releases):
         by_region[region].append({
             'version': version,
             'tag': release['tagName'],
-            'url': release['url'],
+            'url': f"https://github.com/{os.environ.get('GITHUB_REPOSITORY', 'nicodotgit/degas-fw-dump')}/releases/tag/{release['tagName']}",
             'date': release['createdAt'][:10],  # YYYY-MM-DD
             'name': release['name']
         })
