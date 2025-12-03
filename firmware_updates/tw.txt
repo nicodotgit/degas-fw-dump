@@ -1,4 +1,4 @@
-V816.0.2.0.UNETWXM
-https://bigota.d.miui.com/OS1.0.2.0.UNETWXM/degas_tw_global_images_OS1.0.2.0.UNETWXM_20240731.0000.00_14.0_tw_97b4cfcd79.tgz
-https://hugeota.d.miui.com/OS1.0.2.0.UNETWXM/degas_tw_global_images_OS1.0.2.0.UNETWXM_20240731.0000.00_14.0_tw_97b4cfcd79.tgz
-https://bn.d.miui.com/OS1.0.2.0.UNETWXM/degas_tw_global_images_OS1.0.2.0.UNETWXM_20240731.0000.00_14.0_tw_97b4cfcd79.tgz
+V816.0.3.0.UNETWXM
+https://bigota.d.miui.com/OS1.0.3.0.UNETWXM/degas_tw_global_images_OS1.0.3.0.UNETWXM_20240920.0000.00_14.0_tw_c86e7cce74.tgz
+https://hugeota.d.miui.com/OS1.0.3.0.UNETWXM/degas_tw_global_images_OS1.0.3.0.UNETWXM_20240920.0000.00_14.0_tw_c86e7cce74.tgz
+https://bn.d.miui.com/OS1.0.3.0.UNETWXM/degas_tw_global_images_OS1.0.3.0.UNETWXM_20240920.0000.00_14.0_tw_c86e7cce74.tgz

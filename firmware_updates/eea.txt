@@ -1,4 +1,4 @@
-V816.0.10.0.UNEEUXM
-https://bigota.d.miui.com/OS1.0.10.0.UNEEUXM/degas_eea_global_images_OS1.0.10.0.UNEEUXM_20240910.0000.00_14.0_eea_a19881c518.tgz
-https://hugeota.d.miui.com/OS1.0.10.0.UNEEUXM/degas_eea_global_images_OS1.0.10.0.UNEEUXM_20240910.0000.00_14.0_eea_a19881c518.tgz
-https://bn.d.miui.com/OS1.0.10.0.UNEEUXM/degas_eea_global_images_OS1.0.10.0.UNEEUXM_20240910.0000.00_14.0_eea_a19881c518.tgz
+V816.0.11.0.UNEEUXM
+https://bigota.d.miui.com/OS1.0.11.0.UNEEUXM/degas_eea_global_images_OS1.0.11.0.UNEEUXM_20241018.0000.00_14.0_eea_00f04d6ea0.tgz
+https://hugeota.d.miui.com/OS1.0.11.0.UNEEUXM/degas_eea_global_images_OS1.0.11.0.UNEEUXM_20241018.0000.00_14.0_eea_00f04d6ea0.tgz
+https://bn.d.miui.com/OS1.0.11.0.UNEEUXM/degas_eea_global_images_OS1.0.11.0.UNEEUXM_20241018.0000.00_14.0_eea_00f04d6ea0.tgz
