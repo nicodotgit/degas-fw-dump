@@ -35,6 +35,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_PAT }}
+          fetch-depth: 2
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -46,31 +47,27 @@ jobs:
           python3 .github/scripts/check_firmware_mi_community.py ${{ github.event.inputs.region || 'all' }}
 
       - name: Commit Updated Manifests
+        id: commit
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           
           if git diff --quiet firmware_updates/; then
             echo "ℹ️  No new firmware versions found"
-            exit 0
+            echo "CHANGES=false" >> $GITHUB_OUTPUT
+          else
+            git add firmware_updates/*.json
+            git commit -m "🔄 Auto-update firmware manifests [skip ci]"
+            git push origin main
+            echo "✅ Updated manifests pushed"
+            echo "CHANGES=true" >> $GITHUB_OUTPUT
           fi
-          
-          git add firmware_updates/*.json
-          git commit -m "🔄 Auto-update firmware manifests [skip ci]"
-          git push origin main
-          echo "✅ Updated manifests pushed"
 
       - name: Trigger Firmware Dump Workflow
-        if: success()
+        if: steps.commit.outputs.CHANGES == 'true'
         run: |
-          # Check if there were changes
-          if git diff HEAD~1 --quiet firmware_updates/; then
-            echo "ℹ️  No new versions found"
-            echo "💡 Firmware dumper runs daily to process backlog"
-          else
-            echo "✅ New versions detected"
-            echo "📢 Triggering firmware dump workflow for immediate processing..."
-            gh workflow run firmware_updater.yml
-          fi
+          echo "✅ New versions detected"
+          echo "📢 Triggering firmware dump workflow for immediate processing..."
+          gh workflow run firmware_updater.yml
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
