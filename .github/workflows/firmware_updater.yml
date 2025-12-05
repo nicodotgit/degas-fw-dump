@@ -117,13 +117,14 @@ jobs:
           fi
           
           # Parse manifest and find first unprocessed version
+          REGION="${{ matrix.region }}"
           python3 << 'PYEOF'
 import json
 import os
 import sys
 from subprocess import run
 
-manifest_path = "firmware_updates/${{ matrix.region }}.json"
+manifest_path = f"firmware_updates/{os.environ['REGION']}.json"
 
 # Load manifest
 try:
@@ -152,16 +153,17 @@ if result.returncode == 0 and result.stdout.strip():
         print(f"Warning: Could not parse releases: {e}")
 
 # Find oldest unprocessed version by date
+region = os.environ['REGION']
 unprocessed = []
 for version_info in versions:
-    tag = f"v{version_info['version']}-${{ matrix.region }}"
+    tag = f"v{version_info['version']}-{region}"
     if tag not in existing_tags:
         unprocessed.append(version_info)
     else:
         print(f"  ⏭️  Skipping {version_info['version']} (already released as {tag})")
 
 if not unprocessed:
-    print("✅ All versions already released for ${{ matrix.region }}")
+    print(f"✅ All versions already released for {region}")
     sys.exit(0)
 
 # Sort unprocessed by date (oldest first)
