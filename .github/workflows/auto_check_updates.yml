@@ -1,0 +1,76 @@
+name: 'Check for Firmware Updates'
+
+on:
+  schedule:
+    # Run every 6 hours
+    - cron: '0 */6 * * *'
+  
+  workflow_dispatch:
+    inputs:
+      region:
+        description: 'Region to check (leave empty for all)'
+        required: false
+        type: choice
+        options:
+          - ''
+          - global
+          - eea
+          - ru
+          - id
+          - tw
+          - tr
+          - global_dc
+
+# Prevent concurrent update checks
+concurrency:
+  group: firmware-updates-check
+  cancel-in-progress: false
+
+jobs:
+  check_updates:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Check for firmware updates
+        run: |
+          python3 .github/scripts/check_firmware_mi_community.py ${{ github.event.inputs.region || 'all' }}
+
+      - name: Commit Updated Manifests
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          if git diff --quiet firmware_updates/; then
+            echo "ℹ️  No new firmware versions found"
+            exit 0
+          fi
+          
+          git add firmware_updates/*.json
+          git commit -m "🔄 Auto-update firmware manifests [skip ci]"
+          git push origin main
+          echo "✅ Updated manifests pushed"
+
+      - name: Trigger Firmware Dump Workflow
+        if: success()
+        run: |
+          # Check if there were changes
+          if git diff HEAD~1 --quiet firmware_updates/; then
+            echo "ℹ️  No new versions found"
+            echo "💡 Firmware dumper runs daily to process backlog"
+          else
+            echo "✅ New versions detected"
+            echo "📢 Triggering firmware dump workflow for immediate processing..."
+            gh workflow run firmware_updater.yml
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

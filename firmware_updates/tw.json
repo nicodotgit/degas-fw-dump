@@ -1,0 +1,137 @@
+{
+  "region": "tw",
+  "versions": [
+    {
+      "version": "OS2.0.205.0.VNETWXM",
+      "date": "2025-10-15",
+      "hyperos_version": "2.2",
+      "android_version": "15.0",
+      "md5": "",
+      "urls": [
+        "https://bigota.d.miui.com/OS2.0.205.0.VNETWXM/degas_tw_global_images_OS2.0.205.0.VNETWXM_20251015.0000.00_15.0_tw_60fcc32e5e.tgz",
+        "https://hugeota.d.miui.com/OS2.0.205.0.VNETWXM/degas_tw_global_images_OS2.0.205.0.VNETWXM_20251015.0000.00_15.0_tw_60fcc32e5e.tgz",
+        "https://bn.d.miui.com/OS2.0.205.0.VNETWXM/degas_tw_global_images_OS2.0.205.0.VNETWXM_20251015.0000.00_15.0_tw_60fcc32e5e.tgz"
+      ]
+    },
+    {
+      "version": "OS2.0.204.0.VNETWXM",
+      "date": "2025-09-18",
+      "hyperos_version": "2.2",
+      "android_version": "15.0",
+      "md5": "",
+      "urls": [
+        "https://bigota.d.miui.com/OS2.0.204.0.VNETWXM/degas_tw_global_images_OS2.0.204.0.VNETWXM_20250918.0000.00_15.0_tw_2faa5f4111.tgz",
+        "https://hugeota.d.miui.com/OS2.0.204.0.VNETWXM/degas_tw_global_images_OS2.0.204.0.VNETWXM_20250918.0000.00_15.0_tw_2faa5f4111.tgz",
+        "https://bn.d.miui.com/OS2.0.204.0.VNETWXM/degas_tw_global_images_OS2.0.204.0.VNETWXM_20250918.0000.00_15.0_tw_2faa5f4111.tgz"
+      ]
+    },
+    {
+      "version": "OS2.0.203.0.VNETWXM",
+      "date": "2025-08-14",
+      "hyperos_version": "2.2",
+      "android_version": "15.0",
+      "md5": "",
+      "urls": [
+        "https://bigota.d.miui.com/OS2.0.203.0.VNETWXM/degas_tw_global_images_OS2.0.203.0.VNETWXM_20250814.0000.00_15.0_tw_9e0b8ab070.tgz",
+        "https://hugeota.d.miui.com/OS2.0.203.0.VNETWXM/degas_tw_global_images_OS2.0.203.0.VNETWXM_20250814.0000.00_15.0_tw_9e0b8ab070.tgz",
+        "https://bn.d.miui.com/OS2.0.203.0.VNETWXM/degas_tw_global_images_OS2.0.203.0.VNETWXM_20250814.0000.00_15.0_tw_9e0b8ab070.tgz"
+      ]
+    },
+    {
+      "version": "OS2.0.202.0.VNETWXM",
+      "date": "2025-06-26",
+      "hyperos_version": "2.2",
+      "android_version": "15.0",
+      "md5": "",
+      "urls": [
+        "https://bigota.d.miui.com/OS2.0.202.0.VNETWXM/degas_tw_global_images_OS2.0.202.0.VNETWXM_20250626.0000.00_15.0_tw_b8b65e41fd.tgz",
+        "https://hugeota.d.miui.com/OS2.0.202.0.VNETWXM/degas_tw_global_images_OS2.0.202.0.VNETWXM_20250626.0000.00_15.0_tw_b8b65e41fd.tgz",
+        "https://bn.d.miui.com/OS2.0.202.0.VNETWXM/degas_tw_global_images_OS2.0.202.0.VNETWXM_20250626.0000.00_15.0_tw_b8b65e41fd.tgz"
+      ]
+    },
+    {
+      "version": "OS2.0.102.0.VNETWXM",
+      "date": "2025-05-06",
+      "hyperos_version": "2.1",
+      "android_version": "15.0",
+      "md5": "",
+      "urls": [
+        "https://bigota.d.miui.com/OS2.0.102.0.VNETWXM/degas_tw_global_images_OS2.0.102.0.VNETWXM_20250506.0000.00_15.0_tw_180577c179.tgz",
+        "https://hugeota.d.miui.com/OS2.0.102.0.VNETWXM/degas_tw_global_images_OS2.0.102.0.VNETWXM_20250506.0000.00_15.0_tw_180577c179.tgz",
+        "https://bn.d.miui.com/OS2.0.102.0.VNETWXM/degas_tw_global_images_OS2.0.102.0.VNETWXM_20250506.0000.00_15.0_tw_180577c179.tgz"
+      ]
+    },
+    {
+      "version": "OS2.0.101.0.VNETWXM",
+      "date": "2025-03-26",
+      "hyperos_version": "2.1",
+      "android_version": "15.0",
+      "md5": "",
+      "urls": [
+        "https://bigota.d.miui.com/OS2.0.101.0.VNETWXM/degas_tw_global_images_OS2.0.101.0.VNETWXM_20250326.0000.00_15.0_tw_4062ce280b.tgz",
+        "https://hugeota.d.miui.com/OS2.0.101.0.VNETWXM/degas_tw_global_images_OS2.0.101.0.VNETWXM_20250326.0000.00_15.0_tw_4062ce280b.tgz",
+        "https://bn.d.miui.com/OS2.0.101.0.VNETWXM/degas_tw_global_images_OS2.0.101.0.VNETWXM_20250326.0000.00_15.0_tw_4062ce280b.tgz"
+      ]
+    },
+    {
+      "version": "OS2.0.2.0.VNETWXM",
+      "date": "2025-01-23",
+      "hyperos_version": "2.0",
+      "android_version": "15.0",
+      "md5": "",
+      "urls": [
+        "https://bigota.d.miui.com/OS2.0.2.0.VNETWXM/degas_tw_global_images_OS2.0.2.0.VNETWXM_20250123.0000.00_15.0_tw_f7baca8673.tgz",
+        "https://hugeota.d.miui.com/OS2.0.2.0.VNETWXM/degas_tw_global_images_OS2.0.2.0.VNETWXM_20250123.0000.00_15.0_tw_f7baca8673.tgz",
+        "https://bn.d.miui.com/OS2.0.2.0.VNETWXM/degas_tw_global_images_OS2.0.2.0.VNETWXM_20250123.0000.00_15.0_tw_f7baca8673.tgz"
+      ]
+    },
+    {
+      "version": "OS2.0.1.0.VNETWXM",
+      "date": "2025-01-02",
+      "hyperos_version": "2.0",
+      "android_version": "15.0",
+      "md5": "",
+      "urls": [
+        "https://bigota.d.miui.com/OS2.0.1.0.VNETWXM/degas_tw_global_images_OS2.0.1.0.VNETWXM_20250102.0000.00_15.0_tw_0997fbb1c1.tgz",
+        "https://hugeota.d.miui.com/OS2.0.1.0.VNETWXM/degas_tw_global_images_OS2.0.1.0.VNETWXM_20250102.0000.00_15.0_tw_0997fbb1c1.tgz",
+        "https://bn.d.miui.com/OS2.0.1.0.VNETWXM/degas_tw_global_images_OS2.0.1.0.VNETWXM_20250102.0000.00_15.0_tw_0997fbb1c1.tgz"
+      ]
+    },
+    {
+      "version": "OS1.0.6.0.UNETWXM",
+      "date": "2024-11-25",
+      "hyperos_version": "1.0",
+      "android_version": "14.0",
+      "md5": "",
+      "urls": [
+        "https://bigota.d.miui.com/OS1.0.6.0.UNETWXM/degas_tw_global_images_OS1.0.6.0.UNETWXM_20241125.0000.00_14.0_tw_308bc18ccf.tgz",
+        "https://hugeota.d.miui.com/OS1.0.6.0.UNETWXM/degas_tw_global_images_OS1.0.6.0.UNETWXM_20241125.0000.00_14.0_tw_308bc18ccf.tgz",
+        "https://bn.d.miui.com/OS1.0.6.0.UNETWXM/degas_tw_global_images_OS1.0.6.0.UNETWXM_20241125.0000.00_14.0_tw_308bc18ccf.tgz"
+      ]
+    },
+    {
+      "version": "OS1.0.3.0.UNETWXM",
+      "date": "2024-09-20",
+      "hyperos_version": "1.0",
+      "android_version": "14.0",
+      "md5": "",
+      "urls": [
+        "https://bigota.d.miui.com/OS1.0.3.0.UNETWXM/degas_tw_global_images_OS1.0.3.0.UNETWXM_20240920.0000.00_14.0_tw_c86e7cce74.tgz",
+        "https://hugeota.d.miui.com/OS1.0.3.0.UNETWXM/degas_tw_global_images_OS1.0.3.0.UNETWXM_20240920.0000.00_14.0_tw_c86e7cce74.tgz",
+        "https://bn.d.miui.com/OS1.0.3.0.UNETWXM/degas_tw_global_images_OS1.0.3.0.UNETWXM_20240920.0000.00_14.0_tw_c86e7cce74.tgz"
+      ]
+    },
+    {
+      "version": "OS1.0.2.0.UNETWXM",
+      "date": "2024-07-31",
+      "hyperos_version": "1.0",
+      "android_version": "14.0",
+      "md5": "",
+      "urls": [
+        "https://bigota.d.miui.com/OS1.0.2.0.UNETWXM/degas_tw_global_images_OS1.0.2.0.UNETWXM_20240731.0000.00_14.0_tw_97b4cfcd79.tgz",
+        "https://hugeota.d.miui.com/OS1.0.2.0.UNETWXM/degas_tw_global_images_OS1.0.2.0.UNETWXM_20240731.0000.00_14.0_tw_97b4cfcd79.tgz",
+        "https://bn.d.miui.com/OS1.0.2.0.UNETWXM/degas_tw_global_images_OS1.0.2.0.UNETWXM_20240731.0000.00_14.0_tw_97b4cfcd79.tgz"
+      ]
+    }
+  ]
+}

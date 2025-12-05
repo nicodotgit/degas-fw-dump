@@ -1,18 +1,85 @@
 name: 'Degas Firmware Dumper'
 
 on:
+  schedule:
+    # Run daily at 00:00 UTC to process backlog
+    - cron: '0 0 * * *'
+  
   push:
+    branches:
+      - main
     paths:
-      - 'firmware_updates/*.txt'
+      - 'firmware_updates/*.json'
+    tags-ignore:
+      - '**'  # Prevent re-runs when tags are created
   
   workflow_dispatch:
+    inputs:
+      region:
+        description: 'Region to process (leave empty for all)'
+        required: false
+        type: choice
+        options:
+          - ''
+          - global
+          - eea
+          - ru
+          - id
+          - tw
+          - tr
+          - global_dc
+
+# Prevent multiple runs of this workflow
+concurrency:
+  group: firmware-dumper-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
+  update_manifests:
+    name: 'Update Firmware Manifests'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      
+      - name: Check for Latest Firmware Updates
+        run: |
+          echo "🔍 Checking Mi Community API for firmware updates..."
+          python3 .github/scripts/check_firmware_mi_community.py
+      
+      - name: Commit Manifest Changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          if git diff --quiet firmware_updates/; then
+            echo "ℹ️  No manifest changes"
+          else
+            git add firmware_updates/
+            git commit -m "📦 Update firmware manifests [skip ci]"
+            git pull --rebase
+            git push
+            echo "✅ Manifests updated"
+          fi
+
   process_firmware_files:
+    name: 'Process Firmware (${{ matrix.region }})'
+    needs: update_manifests
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
     strategy:
+      fail-fast: false  # Continue other regions if one fails
+      max-parallel: 7   # Process all regions in parallel
       matrix:
         region: [global, eea, ru, id, tw, tr, global_dc]
 
@@ -35,62 +102,129 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y aria2 tree pigz python3
 
-      - name: Read Firmware Info and Select Fastest URL
+      - name: Read Manifest and Find Next Version
         id: firmware_info
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          FILE_PATH="firmware_updates/${{ matrix.region }}.txt"
-          if [ ! -f "$FILE_PATH" ]; then
-            echo "File for region ${{ matrix.region }} not found. Skipping."
+          MANIFEST_PATH="firmware_updates/${{ matrix.region }}.json"
+          
+          # Check if manifest exists
+          if [ ! -f "$MANIFEST_PATH" ]; then
+            echo "No manifest for region ${{ matrix.region }}. Skipping."
+            echo "DATA_FOUND=false" >> $GITHUB_OUTPUT
             exit 0
           fi
           
-          VERSION=$(sed -n '1p' "$FILE_PATH" | tr -d '[:space:]')
-          DOWNLOAD_URLS=($(sed '1d' "$FILE_PATH"))
+          # Parse manifest and find first unprocessed version
+          python3 << 'PYEOF'
+import json
+import os
+import sys
+from subprocess import run
 
-          if [ ${#DOWNLOAD_URLS[@]} -eq 0 ]; then
-             echo "ERROR: No download URLs found in ${FILE_PATH}."
-             exit 1
-          elif [ ${#DOWNLOAD_URLS[@]} -eq 1 ]; then
-             FASTEST_URL="${DOWNLOAD_URLS[0]}"
-             echo "Only one URL found. Skipping speed-test."
-          else
-             echo "Multiple URLs found. Starting speed-test..."
-             FASTEST_URL=""
-             MAX_SPEED=0
-             MAX_TEST_TIME=5
-             TEST_SIZE_BYTES=20971520
+manifest_path = "firmware_updates/${{ matrix.region }}.json"
 
-             for URL in "${DOWNLOAD_URLS[@]}"; do
-                echo "Testing URL: $URL (Timeout: ${MAX_TEST_TIME}s, Size: 10MB)"
-                SPEED=$(curl -L --connect-timeout 5 --max-time $MAX_TEST_TIME --range 0-$TEST_SIZE_BYTES -s -o /dev/null -w "%{speed_download}" "$URL" | cut -d'.' -f1)
-                
-                if [ -z "$SPEED" ] || [ "$SPEED" -eq 0 ]; then
-                  echo "Test failed, timed out, or speed was 0. Skipping this URL."
-                  continue
-                fi
+# Load manifest
+try:
+    with open(manifest_path, 'r') as f:
+        manifest = json.load(f)
+except Exception as e:
+    print(f"Error loading manifest: {e}")
+    sys.exit(0)
 
-                SPEED_MBPS=$(awk -v speed_bps="$SPEED" 'BEGIN { printf "%.2f", speed_bps * 8 / 1024 / 1024 }')
-                echo "Result: ${SPEED_MBPS} Mbps"
+versions = manifest.get('versions', [])
+if not versions:
+    print("No versions in manifest")
+    sys.exit(0)
 
-                if (( SPEED > MAX_SPEED )); then
-                   MAX_SPEED=$SPEED
-                   FASTEST_URL=$URL
-                fi
-             done
-          fi
+# Get existing releases
+result = run(['gh', 'release', 'list', '--limit', '1000', '--json', 'tagName'],
+             capture_output=True, text=True)
 
-          if [ -z "$FASTEST_URL" ]; then
-            echo "ERROR: Could not determine the fastest URL. All speed-tests may have failed."
-            exit 1
-          fi
+existing_tags = set()
+if result.returncode == 0 and result.stdout.strip():
+    try:
+        releases = json.loads(result.stdout)
+        existing_tags = {r['tagName'] for r in releases}
+        print(f"Found {len(existing_tags)} existing releases for comparison")
+    except Exception as e:
+        print(f"Warning: Could not parse releases: {e}")
 
-          echo "Fastest URL selected: ${FASTEST_URL}"
-          FILENAME=$(basename "${FASTEST_URL}")
+# Find oldest unprocessed version by date
+unprocessed = []
+for version_info in versions:
+    tag = f"v{version_info['version']}-${{ matrix.region }}"
+    if tag not in existing_tags:
+        unprocessed.append(version_info)
+    else:
+        print(f"  ⏭️  Skipping {version_info['version']} (already released as {tag})")
 
-          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
-          echo "FILENAME=${FILENAME}" >> $GITHUB_OUTPUT
-          echo "DOWNLOAD_URL=${FASTEST_URL}" >> $GITHUB_OUTPUT
-          echo "DATA_FOUND=true" >> $GITHUB_OUTPUT
+if not unprocessed:
+    print("✅ All versions already released for ${{ matrix.region }}")
+    sys.exit(0)
+
+# Sort unprocessed by date (oldest first)
+try:
+    unprocessed.sort(key=lambda x: x.get('date', '9999-99-99'))
+except Exception as e:
+    print(f"⚠️  Warning: Could not sort by date: {e}")
+    print("Processing first unprocessed version found")
+
+# Get oldest unprocessed (first after sorting by date)
+next_version = unprocessed[0]
+print(f"📦 Found {len(unprocessed)} unprocessed version(s)")
+print(f"🎯 Will process oldest: {next_version['version']} ({next_version.get('date', 'unknown date')})")
+
+# Select fastest URL by testing all mirrors
+urls = next_version['urls']
+fastest_url = urls[0]
+
+if len(urls) > 1:
+    print("Testing mirror speeds (10MB sample)...")
+    mirror_speeds = []
+    
+    for url in urls:
+        mirror_name = url.split('/')[2]  # Extract domain
+        result = run(['curl', '-L', '--connect-timeout', '5', '--max-time', '10',
+                     '--range', '0-10485759', '-s', '-o', '/dev/null', 
+                     '-w', '%{speed_download}', url],
+                    capture_output=True, text=True)
+        try:
+            speed = float(result.stdout.strip())
+            speed_mbps = (speed / 1024 / 1024)
+            mirror_speeds.append((url, speed_mbps, mirror_name))
+            print(f"  {mirror_name}: {speed_mbps:.2f} MB/s")
+        except:
+            print(f"  {mirror_name}: Failed")
+            mirror_speeds.append((url, 0, mirror_name))
+    
+    # Sort by speed (fastest first)
+    mirror_speeds.sort(key=lambda x: x[1], reverse=True)
+    
+    if mirror_speeds[0][1] > 0:
+        fastest_url = mirror_speeds[0][0]
+        print(f"✅ Selected: {mirror_speeds[0][2]} ({mirror_speeds[0][1]:.2f} MB/s)")
+    else:
+        print("⚠️  All mirrors failed speed test, using first URL")
+        fastest_url = urls[0]
+
+filename = fastest_url.split('/')[-1]
+
+# Output to GitHub Actions
+with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+    f.write(f"VERSION={next_version['version']}\n")
+    f.write(f"FILENAME={filename}\n")
+    f.write(f"DOWNLOAD_URL={fastest_url}\n")
+    f.write(f"HYPEROS_VERSION={next_version.get('hyperos_version', 'Unknown')}\n")
+    f.write(f"ANDROID_VERSION={next_version.get('android_version', 'Unknown')}\n")
+    f.write(f"RELEASE_DATE={next_version.get('date', 'Unknown')}\n")
+    f.write(f"MD5_HASH={next_version.get('md5', 'Unknown')}\n")
+    f.write(f"CHANGELOG={next_version.get('changelog', 'Official firmware release')}\n")
+    f.write(f"DATA_FOUND=true\n")
+
+print(f"✅ Will process: {next_version['version']}")
+PYEOF
 
       - name: Check if Release Already Exists
         if: steps.firmware_info.outputs.DATA_FOUND == 'true'
@@ -99,11 +233,12 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="v${{ steps.firmware_info.outputs.VERSION }}-${{ matrix.region }}"
+          echo "🔍 Double-checking tag: ${TAG}"
           if gh release view "$TAG" --json name >/dev/null 2>&1; then
-            echo "Release ${TAG} already exists. Stopping."
+            echo "⚠️  Release ${TAG} already exists (race condition detected). Stopping."
             echo "IS_NEW=false" >> $GITHUB_OUTPUT
           else
-            echo "Release ${TAG} is new. Proceeding."
+            echo "✅ Release ${TAG} is new. Proceeding with download."
             echo "IS_NEW=true" >> $GITHUB_OUTPUT
           fi
 
@@ -123,62 +258,52 @@ jobs:
       - name: Download and Extract Firmware
         if: steps.check_release.outputs.IS_NEW == 'true'
         run: |
-          echo "Downloading ${{ steps.firmware_info.outputs.FILENAME }} with aria2..."
-          aria2c -x 16 -s 16 -k 1M -o "${{ steps.firmware_info.outputs.FILENAME }}" "${{ steps.firmware_info.outputs.DOWNLOAD_URL }}"
-          echo "Extracting files with parallel decompression..."
+          FILENAME="${{ steps.firmware_info.outputs.FILENAME }}"
+          
+          echo "Downloading ${FILENAME} with aria2..."
+          aria2c -x 16 -s 16 -k 1M -o "${FILENAME}" "${{ steps.firmware_info.outputs.DOWNLOAD_URL }}"
+          
+          echo "Calculating MD5 hash..."
+          MD5_HASH=$(md5sum "${FILENAME}" | awk '{print $1}')
+          echo "MD5=${MD5_HASH}" >> $GITHUB_OUTPUT
+          echo "MD5: ${MD5_HASH}"
+          
+          echo "Extracting .tgz fastboot package..."
           mkdir -p extracted_firmware
-          tar -I pigz -xvf "${{ steps.firmware_info.outputs.FILENAME }}" -C extracted_firmware
+          tar -I pigz -xvf "${FILENAME}" -C extracted_firmware
+          
           echo "Handling large files..."
           find extracted_firmware -type f -size +2000M | while read -r file; do
             echo "Splitting large file: $file"
             split -b 2000M "$file" "$file.part-"
             rm -f "$file"
           done
-          rm -f "${{ steps.firmware_info.outputs.FILENAME }}"
+          
+          rm -f "${FILENAME}"
+        id: download
 
-      - name: Extract Firmware Metadata
+      - name: Update Manifest with MD5
         if: steps.check_release.outputs.IS_NEW == 'true'
-        id: metadata
         run: |
-          VERSION="${{ steps.firmware_info.outputs.VERSION }}"
-          FILENAME="${{ steps.firmware_info.outputs.FILENAME }}"
-          
-          # Extract metadata from filename (format: degas_region_images_VERSION_BUILDDATE_ANDROIDVERSION_region_hash.tgz)
-          if [[ "$FILENAME" =~ _([0-9]{8}\.[0-9]{4}\.[0-9]{2})_([0-9]+\.[0-9]+)_ ]]; then
-            BUILD_DATE="${BASH_REMATCH[1]}"
-            ANDROID_VERSION="${BASH_REMATCH[2]}"
-            FORMATTED_DATE=$(echo "$BUILD_DATE" | sed 's/\([0-9]\{4\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)\.\([0-9]\{4\}\)\.\([0-9]\{2\}\)/\1-\2-\3 \4:\5/')
-          else
-            BUILD_DATE="Unknown"
-            ANDROID_VERSION="Unknown"
-            FORMATTED_DATE="Unknown"
-          fi
-          
-          echo "BUILD_DATE=${FORMATTED_DATE}" >> $GITHUB_OUTPUT
-          echo "ANDROID_VERSION=${ANDROID_VERSION}" >> $GITHUB_OUTPUT
-          
-          # Try to extract kernel version from boot.img if available
-          KERNEL_VERSION="Unknown"
-          if [ -f "extracted_firmware/boot.img" ]; then
-            KERNEL_INFO=$(strings extracted_firmware/boot.img | grep -m 1 "Linux version" || echo "")
-            if [ -n "$KERNEL_INFO" ]; then
-              KERNEL_VERSION=$(echo "$KERNEL_INFO" | sed -n 's/.*Linux version \([^ ]*\).*/\1/p')
-            fi
-          fi
-          echo "KERNEL_VERSION=${KERNEL_VERSION}" >> $GITHUB_OUTPUT
-          
-          # Extract HyperOS/MIUI version from build.prop if available
-          HYPEROS_VERSION="Unknown"
-          if [ -f "extracted_firmware/images/system.img" ] || [ -f "extracted_firmware/images/system.img.part-aa" ]; then
-            echo "Note: system.img found but requires mounting to extract build.prop"
-          fi
-          
-          # Parse version components
-          if [[ "$VERSION" =~ ^([A-Z]+)([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\.([A-Z]+)$ ]]; then
-            HYPEROS_VERSION="${BASH_REMATCH[1]}${BASH_REMATCH[2]}"
-            VERSION_CODE="${BASH_REMATCH[3]}"
-          fi
-          echo "HYPEROS_VERSION=${HYPEROS_VERSION}" >> $GITHUB_OUTPUT
+          python3 << 'PYEOF'
+import json
+
+manifest_path = "firmware_updates/${{ matrix.region }}.json"
+with open(manifest_path, 'r') as f:
+    manifest = json.load(f)
+
+# Find and update version with MD5
+for version in manifest['versions']:
+    if version['version'] == "${{ steps.firmware_info.outputs.VERSION }}":
+        version['md5'] = "${{ steps.download.outputs.MD5 }}"
+        break
+
+# Save updated manifest
+with open(manifest_path, 'w') as f:
+    json.dump(manifest, f, indent=2)
+
+print(f"✅ Updated manifest with MD5: ${{ steps.download.outputs.MD5 }}")
+PYEOF
 
       - name: Create GitHub Release and Upload Files
         if: steps.check_release.outputs.IS_NEW == 'true'
@@ -200,10 +325,10 @@ jobs:
           
           - **Version:** ${VERSION}
           - **Region:** ${REGION_UPPER}
-          - **HyperOS Version:** ${{ steps.metadata.outputs.HYPEROS_VERSION }}
-          - **Android Version:** ${{ steps.metadata.outputs.ANDROID_VERSION }}
-          - **Build Date:** ${{ steps.metadata.outputs.BUILD_DATE }}
-          - **Kernel Version:** ${{ steps.metadata.outputs.KERNEL_VERSION }}
+          - **HyperOS Version:** ${{ steps.firmware_info.outputs.HYPEROS_VERSION }}
+          - **Android Version:** ${{ steps.firmware_info.outputs.ANDROID_VERSION }}
+          - **Release Date:** ${{ steps.firmware_info.outputs.RELEASE_DATE }}
+          - **MD5 Hash:** \`${{ steps.download.outputs.MD5 }}\`
           
           ## 📊 Package Details
           
@@ -227,6 +352,40 @@ jobs:
             --title "🚀 ${VERSION} [${REGION_UPPER}]" \
             --notes "$RELEASE_NOTES" \
             $(find extracted_firmware -type f)
+
+      - name: Commit Updated Manifest
+        if: steps.check_release.outputs.IS_NEW == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Pull latest changes first to avoid conflicts with parallel jobs
+          git pull --rebase origin main || true
+          
+          git add firmware_updates/${{ matrix.region }}.json
+          if git diff --staged --quiet; then
+            echo "ℹ️  No changes to commit"
+            exit 0
+          fi
+          
+          git commit -m "Update ${{ matrix.region }} manifest with MD5 for ${{ steps.firmware_info.outputs.VERSION }} [skip ci]"
+          
+          # Retry push up to 3 times in case of parallel push conflicts
+          for i in {1..3}; do
+            if git push; then
+              echo "✅ Manifest pushed successfully"
+              break
+            else
+              echo "⚠️  Push failed, attempt $i/3"
+              if [ $i -lt 3 ]; then
+                sleep $((5 + RANDOM % 10))  # Random delay 5-15 seconds
+                git pull --rebase origin main
+              else
+                echo "❌ Failed to push after 3 attempts"
+                exit 1
+              fi
+            fi
+          done
 
   update_readme:
     needs: process_firmware_files

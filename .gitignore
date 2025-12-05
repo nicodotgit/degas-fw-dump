@@ -24,3 +24,8 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.bak
+*.log
+
+# Test downloads
+*.tgz
+extracted_firmware/

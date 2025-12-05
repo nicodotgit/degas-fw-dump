@@ -36,25 +36,70 @@ def parse_tag(tag):
         return match.group(1), match.group(2)
     return None, None
 
+def load_manifests():
+    """Load all manifest files to get metadata"""
+    manifests = {}
+    regions = ['global', 'eea', 'ru', 'id', 'tw', 'tr', 'global_dc']
+    
+    for region in regions:
+        manifest_path = f'firmware_updates/{region}.json'
+        if os.path.exists(manifest_path):
+            try:
+                with open(manifest_path, 'r') as f:
+                    manifest = json.load(f)
+                    manifests[region] = {v['version']: v for v in manifest.get('versions', [])}
+            except Exception as e:
+                print(f"Warning: Could not load manifest for {region}: {e}")
+                manifests[region] = {}
+        else:
+            manifests[region] = {}
+    
+    return manifests
+
 def generate_firmware_index(releases):
     """Generate HTML expandable firmware index"""
     
-    # Group releases by region
+    # Load manifests for additional metadata
+    manifests = load_manifests()
+    
+    # Group releases by region, deduplicate by both tag AND version
     by_region = {}
+    seen_tags = set()
+    seen_version_region = set()
+    
     for release in releases:
         version, region = parse_tag(release['tagName'])
         if not version or not region:
             continue
         
+        # Skip duplicate tags
+        tag = release['tagName']
+        if tag in seen_tags:
+            continue
+        
+        # Skip duplicate version+region combinations
+        version_region_key = f"{version}-{region}"
+        if version_region_key in seen_version_region:
+            continue
+        
+        seen_tags.add(tag)
+        seen_version_region.add(version_region_key)
+        
         if region not in by_region:
             by_region[region] = []
         
+        # Get manifest data if available
+        manifest_data = manifests.get(region, {}).get(version, {})
+        
         by_region[region].append({
             'version': version,
-            'tag': release['tagName'],
-            'url': f"https://github.com/{os.environ.get('GITHUB_REPOSITORY', 'nicodotgit/degas-fw-dump')}/releases/tag/{release['tagName']}",
-            'date': release['createdAt'][:10],  # YYYY-MM-DD
-            'name': release['name']
+            'tag': tag,
+            'url': f"https://github.com/{os.environ.get('GITHUB_REPOSITORY', 'nicodotgit/degas-fw-dump')}/releases/tag/{tag}",
+            'date': release['createdAt'][:10],
+            'name': release['name'],
+            'hyperos': manifest_data.get('hyperos_version', ''),
+            'android': manifest_data.get('android_version', ''),
+            'md5': manifest_data.get('md5', '')
         })
     
     # Sort by version (newest first)
@@ -72,21 +117,29 @@ def generate_firmware_index(releases):
         'global_dc': 'Global DC'
     }
     
-    # Generate HTML
-    html_parts = ['## 📱 Firmware Version Index\n\n']
-    html_parts.append('Browse all available firmware versions by region. Click to expand each region.\n\n')
+    # Generate simple HTML table
+    if not by_region:
+        return "## 📦 Available Firmware\n\nNo firmware versions available yet.\n"
+    
+    html_parts = ['## 📦 Available Firmware\n\n']
     
     for region in sorted(by_region.keys()):
         region_name = region_names.get(region, region.upper())
         versions = by_region[region]
         
+        if not versions:
+            continue
+        
         html_parts.append(f'<details>\n')
-        html_parts.append(f'<summary><b>{region_name}</b> ({len(versions)} versions available)</summary>\n\n')
-        html_parts.append('| Version | Release Date | Download |\n')
-        html_parts.append('|---------|--------------|----------|\n')
+        html_parts.append(f'<summary><b>{region_name}</b> ({len(versions)} versions)</summary>\n\n')
+        html_parts.append('| Version | HyperOS | Android | Date | MD5 | Download |\n')
+        html_parts.append('|---------|---------|---------|------|-----|----------|\n')
         
         for v in versions:
-            html_parts.append(f"| `{v['version']}` | {v['date']} | [📥 Download]({v['url']}) |\n")
+            hyperos = v['hyperos'] if v['hyperos'] else '-'
+            android = v['android'] if v['android'] else '-'
+            md5_short = v['md5'][:8] + '...' if v['md5'] and len(v['md5']) > 8 else '-'
+            html_parts.append(f"| `{v['version']}` | {hyperos} | {android} | {v['date']} | `{md5_short}` | [📥]({v['url']}) |\n")
         
         html_parts.append('\n</details>\n\n')
     

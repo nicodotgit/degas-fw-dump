@@ -1,0 +1,125 @@
+{
+  "region": "eea",
+  "versions": [
+    {
+      "version": "OS2.0.206.0.VNEEUXM",
+      "date": "2025-09-03",
+      "hyperos_version": "2.2",
+      "android_version": "15.0",
+      "md5": "",
+      "urls": [
+        "https://bigota.d.miui.com/OS2.0.206.0.VNEEUXM/degas_eea_global_images_OS2.0.206.0.VNEEUXM_20250903.0000.00_15.0_eea_bedd50c74e.tgz",
+        "https://hugeota.d.miui.com/OS2.0.206.0.VNEEUXM/degas_eea_global_images_OS2.0.206.0.VNEEUXM_20250903.0000.00_15.0_eea_bedd50c74e.tgz",
+        "https://bn.d.miui.com/OS2.0.206.0.VNEEUXM/degas_eea_global_images_OS2.0.206.0.VNEEUXM_20250903.0000.00_15.0_eea_bedd50c74e.tgz"
+      ]
+    },
+    {
+      "version": "OS2.0.205.0.VNEEUXM",
+      "date": "2025-08-13",
+      "hyperos_version": "2.2",
+      "android_version": "15.0",
+      "md5": "",
+      "urls": [
+        "https://bigota.d.miui.com/OS2.0.205.0.VNEEUXM/degas_eea_global_images_OS2.0.205.0.VNEEUXM_20250813.0000.00_15.0_eea_f3e2ef6e53.tgz",
+        "https://hugeota.d.miui.com/OS2.0.205.0.VNEEUXM/degas_eea_global_images_OS2.0.205.0.VNEEUXM_20250813.0000.00_15.0_eea_f3e2ef6e53.tgz",
+        "https://bn.d.miui.com/OS2.0.205.0.VNEEUXM/degas_eea_global_images_OS2.0.205.0.VNEEUXM_20250813.0000.00_15.0_eea_f3e2ef6e53.tgz"
+      ]
+    },
+    {
+      "version": "OS2.0.204.0.VNEEUXM",
+      "date": "2025-07-15",
+      "hyperos_version": "2.2",
+      "android_version": "15.0",
+      "md5": "",
+      "urls": [
+        "https://bigota.d.miui.com/OS2.0.204.0.VNEEUXM/degas_eea_global_images_OS2.0.204.0.VNEEUXM_20250715.0000.00_15.0_eea_33673809da.tgz",
+        "https://hugeota.d.miui.com/OS2.0.204.0.VNEEUXM/degas_eea_global_images_OS2.0.204.0.VNEEUXM_20250715.0000.00_15.0_eea_33673809da.tgz",
+        "https://bn.d.miui.com/OS2.0.204.0.VNEEUXM/degas_eea_global_images_OS2.0.204.0.VNEEUXM_20250715.0000.00_15.0_eea_33673809da.tgz"
+      ]
+    },
+    {
+      "version": "OS2.0.203.0.VNEEUXM",
+      "date": "2025-06-17",
+      "hyperos_version": "2.2",
+      "android_version": "15.0",
+      "md5": "",
+      "urls": [
+        "https://bigota.d.miui.com/OS2.0.203.0.VNEEUXM/degas_eea_global_images_OS2.0.203.0.VNEEUXM_20250617.0000.00_15.0_eea_9c9bb0aa8b.tgz",
+        "https://hugeota.d.miui.com/OS2.0.203.0.VNEEUXM/degas_eea_global_images_OS2.0.203.0.VNEEUXM_20250617.0000.00_15.0_eea_9c9bb0aa8b.tgz",
+        "https://bn.d.miui.com/OS2.0.203.0.VNEEUXM/degas_eea_global_images_OS2.0.203.0.VNEEUXM_20250617.0000.00_15.0_eea_9c9bb0aa8b.tgz"
+      ]
+    },
+    {
+      "version": "OS2.0.105.0.VNEEUXM",
+      "date": "2025-04-18",
+      "hyperos_version": "2.1",
+      "android_version": "15.0",
+      "md5": "",
+      "urls": [
+        "https://bigota.d.miui.com/OS2.0.105.0.VNEEUXM/degas_eea_global_images_OS2.0.105.0.VNEEUXM_20250418.0000.00_15.0_eea_c346f8cc87.tgz",
+        "https://hugeota.d.miui.com/OS2.0.105.0.VNEEUXM/degas_eea_global_images_OS2.0.105.0.VNEEUXM_20250418.0000.00_15.0_eea_c346f8cc87.tgz",
+        "https://bn.d.miui.com/OS2.0.105.0.VNEEUXM/degas_eea_global_images_OS2.0.105.0.VNEEUXM_20250418.0000.00_15.0_eea_c346f8cc87.tgz"
+      ]
+    },
+    {
+      "version": "OS2.0.103.0.VNEEUXM",
+      "date": "2025-03-13",
+      "hyperos_version": "2.1",
+      "android_version": "15.0",
+      "md5": "",
+      "urls": [
+        "https://bigota.d.miui.com/OS2.0.103.0.VNEEUXM/degas_eea_global_images_OS2.0.103.0.VNEEUXM_20250313.0000.00_15.0_eea_3f5bf4f474.tgz",
+        "https://hugeota.d.miui.com/OS2.0.103.0.VNEEUXM/degas_eea_global_images_OS2.0.103.0.VNEEUXM_20250313.0000.00_15.0_eea_3f5bf4f474.tgz",
+        "https://bn.d.miui.com/OS2.0.103.0.VNEEUXM/degas_eea_global_images_OS2.0.103.0.VNEEUXM_20250313.0000.00_15.0_eea_3f5bf4f474.tgz"
+      ]
+    },
+    {
+      "version": "OS2.0.5.0.VNEEUXM",
+      "date": "2025-01-20",
+      "hyperos_version": "2.0",
+      "android_version": "15.0",
+      "md5": "",
+      "urls": [
+        "https://bigota.d.miui.com/OS2.0.5.0.VNEEUXM/degas_eea_global_images_OS2.0.5.0.VNEEUXM_20250120.0000.00_15.0_eea_320d1f79a8.tgz",
+        "https://hugeota.d.miui.com/OS2.0.5.0.VNEEUXM/degas_eea_global_images_OS2.0.5.0.VNEEUXM_20250120.0000.00_15.0_eea_320d1f79a8.tgz",
+        "https://bn.d.miui.com/OS2.0.5.0.VNEEUXM/degas_eea_global_images_OS2.0.5.0.VNEEUXM_20250120.0000.00_15.0_eea_320d1f79a8.tgz"
+      ]
+    },
+    {
+      "version": "OS2.0.2.0.VNEEUXM",
+      "date": "2024-11-27",
+      "hyperos_version": "2.0",
+      "android_version": "15.0",
+      "md5": "",
+      "urls": [
+        "https://bigota.d.miui.com/OS2.0.2.0.VNEEUXM/degas_eea_global_images_OS2.0.2.0.VNEEUXM_20241127.0000.00_15.0_eea_efc0929e69.tgz",
+        "https://hugeota.d.miui.com/OS2.0.2.0.VNEEUXM/degas_eea_global_images_OS2.0.2.0.VNEEUXM_20241127.0000.00_15.0_eea_efc0929e69.tgz",
+        "https://bn.d.miui.com/OS2.0.2.0.VNEEUXM/degas_eea_global_images_OS2.0.2.0.VNEEUXM_20241127.0000.00_15.0_eea_efc0929e69.tgz"
+      ]
+    },
+    {
+      "version": "OS1.0.11.0.UNEEUXM",
+      "date": "2024-10-18",
+      "hyperos_version": "1.0",
+      "android_version": "14.0",
+      "md5": "",
+      "urls": [
+        "https://bigota.d.miui.com/OS1.0.11.0.UNEEUXM/degas_eea_global_images_OS1.0.11.0.UNEEUXM_20241018.0000.00_14.0_eea_00f04d6ea0.tgz",
+        "https://hugeota.d.miui.com/OS1.0.11.0.UNEEUXM/degas_eea_global_images_OS1.0.11.0.UNEEUXM_20241018.0000.00_14.0_eea_00f04d6ea0.tgz",
+        "https://bn.d.miui.com/OS1.0.11.0.UNEEUXM/degas_eea_global_images_OS1.0.11.0.UNEEUXM_20241018.0000.00_14.0_eea_00f04d6ea0.tgz"
+      ]
+    },
+    {
+      "version": "OS1.0.10.0.UNEEUXM",
+      "date": "2024-09-10",
+      "hyperos_version": "1.0",
+      "android_version": "14.0",
+      "md5": "",
+      "urls": [
+        "https://bigota.d.miui.com/OS1.0.10.0.UNEEUXM/degas_eea_global_images_OS1.0.10.0.UNEEUXM_20240910.0000.00_14.0_eea_a19881c518.tgz",
+        "https://hugeota.d.miui.com/OS1.0.10.0.UNEEUXM/degas_eea_global_images_OS1.0.10.0.UNEEUXM_20240910.0000.00_14.0_eea_a19881c518.tgz",
+        "https://bn.d.miui.com/OS1.0.10.0.UNEEUXM/degas_eea_global_images_OS1.0.10.0.UNEEUXM_20240910.0000.00_14.0_eea_a19881c518.tgz"
+      ]
+    }
+  ]
+}
