@@ -106,18 +106,18 @@ jobs:
         id: firmware_info
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REGION: ${{ matrix.region }}
         run: |
-          MANIFEST_PATH="firmware_updates/${{ matrix.region }}.json"
+          MANIFEST_PATH="firmware_updates/${REGION}.json"
           
           # Check if manifest exists
           if [ ! -f "$MANIFEST_PATH" ]; then
-            echo "No manifest for region ${{ matrix.region }}. Skipping."
+            echo "No manifest for region ${REGION}. Skipping."
             echo "DATA_FOUND=false" >> $GITHUB_OUTPUT
             exit 0
           fi
           
           # Parse manifest and find first unprocessed version
-          REGION="${{ matrix.region }}"
           python3 << 'PYEOF'
 import json
 import os
@@ -286,25 +286,34 @@ PYEOF
 
       - name: Update Manifest with MD5
         if: steps.check_release.outputs.IS_NEW == 'true'
+        env:
+          REGION: ${{ matrix.region }}
+          VERSION: ${{ steps.firmware_info.outputs.VERSION }}
+          MD5: ${{ steps.download.outputs.MD5 }}
         run: |
           python3 << 'PYEOF'
 import json
+import os
 
-manifest_path = "firmware_updates/${{ matrix.region }}.json"
+region = os.environ['REGION']
+version = os.environ['VERSION']
+md5 = os.environ['MD5']
+
+manifest_path = f"firmware_updates/{region}.json"
 with open(manifest_path, 'r') as f:
     manifest = json.load(f)
 
 # Find and update version with MD5
-for version in manifest['versions']:
-    if version['version'] == "${{ steps.firmware_info.outputs.VERSION }}":
-        version['md5'] = "${{ steps.download.outputs.MD5 }}"
+for v in manifest['versions']:
+    if v['version'] == version:
+        v['md5'] = md5
         break
 
 # Save updated manifest
 with open(manifest_path, 'w') as f:
     json.dump(manifest, f, indent=2)
 
-print(f"✅ Updated manifest with MD5: ${{ steps.download.outputs.MD5 }}")
+print(f"✅ Updated manifest with MD5: {md5}")
 PYEOF
 
       - name: Create GitHub Release and Upload Files
