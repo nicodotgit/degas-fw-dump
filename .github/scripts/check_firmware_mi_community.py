@@ -246,6 +246,17 @@ def main():
             hyperos_version = "1.0"
         elif info['version'].startswith('OS2.'):
             hyperos_version = "2.0"
+        elif info['version'].startswith('OS3.'):
+            parts = info['version'].split('.')
+            if len(parts) > 2:
+                build_num = parts[2]
+                # 3.0.3XX.X -> HyperOS 3.1
+                if len(build_num) == 3 and build_num.startswith('3'):
+                    hyperos_version = "3.1"
+                else: # 3.0.0.X or similar -> HyperOS 3
+                    hyperos_version = "3.0"
+            else:
+                hyperos_version = "3.0"
         elif info['version'].startswith('V'):
             hyperos_version = "MIUI"
         

@@ -4,7 +4,7 @@
     {
       "version": "OS3.0.302.0.WNEEUXM",
       "date": "2026-04-16",
-      "hyperos_version": "Unknown",
+      "hyperos_version": "3.1",
       "android_version": "16.0",
       "md5": "bfbaffc36ab1fc813a4a88f6b8629018",
       "urls": [
@@ -17,7 +17,7 @@
     {
       "version": "OS3.0.9.0.WNEEUXM",
       "date": "2026-02-04",
-      "hyperos_version": "Unknown",
+      "hyperos_version": "3.0",
       "android_version": "16.0",
       "md5": "3a20a1a6853040a82311c7a6477c590f",
       "urls": [
@@ -30,7 +30,7 @@
     {
       "version": "OS3.0.4.0.WNEEUXM",
       "date": "2025-11-26",
-      "hyperos_version": "Unknown",
+      "hyperos_version": "3.0",
       "android_version": "16.0",
       "md5": "ea39769fd6d498a041c316fec49db5df",
       "urls": [

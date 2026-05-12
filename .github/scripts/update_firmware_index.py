@@ -11,22 +11,26 @@ from subprocess import run, PIPE
 
 def get_all_releases():
     """Fetch all releases from GitHub"""
-    result = run(
-        ['gh', 'release', 'list', '--limit', '1000', '--json', 'tagName,name,createdAt'],
-        capture_output=True,
-        text=True
-    )
-    
-    if result.returncode != 0:
-        # If gh fails (e.g., no releases yet), return empty list
-        if 'no releases found' in result.stderr.lower() or 'not found' in result.stderr.lower():
-            print("ℹ️  No releases found yet in repository")
-            return []
-        else:
-            print(f"❌ gh CLI error: {result.stderr}")
-            raise RuntimeError(f"Failed to fetch releases: {result.stderr}")
-    
-    return json.loads(result.stdout) if result.stdout.strip() else []
+    try:
+        result = run(
+            ['gh', 'release', 'list', '--limit', '1000', '--json', 'tagName,name,createdAt'],
+            capture_output=True,
+            text=True
+        )
+        
+        if result.returncode != 0:
+            # If gh fails (e.g., no releases yet), return empty list
+            if 'no releases found' in result.stderr.lower() or 'not found' in result.stderr.lower():
+                print("ℹ️  No releases found yet in repository")
+                return []
+            else:
+                print(f"❌ gh CLI error: {result.stderr}")
+                raise RuntimeError(f"Failed to fetch releases: {result.stderr}")
+        
+        return json.loads(result.stdout) if result.stdout.strip() else []
+    except FileNotFoundError:
+        print("❌ gh CLI is not available. Skipping GitHub releases check.")
+        return []
 
 def parse_tag(tag):
     """Parse release tag to extract version and region"""
@@ -117,29 +121,42 @@ def generate_firmware_index(releases):
         'global_dc': 'Global DC'
     }
     
+    # Region flags
+    region_flags = {
+        'global': '🌐',
+        'eea': '🇪🇺',
+        'ru': '🇷🇺',
+        'id': '🇮🇩',
+        'tw': '🇹🇼',
+        'tr': '🇹🇷',
+        'global_dc': '🌍'
+    }
+    
     # Generate simple HTML table
     if not by_region:
         return "## 📦 Available Firmware\n\nNo firmware versions available yet.\n"
     
-    html_parts = ['## 📦 Available Firmware\n\n']
+    html_parts = ['## 🌍 Regional Firmware Variants\n\n']
+    html_parts.append('Select a region to expand and see the available Fastboot ROMs.\n\n')
     
     for region in sorted(by_region.keys()):
         region_name = region_names.get(region, region.upper())
+        flag = region_flags.get(region, '📦')
         versions = by_region[region]
         
         if not versions:
             continue
         
         html_parts.append(f'<details>\n')
-        html_parts.append(f'<summary><b>{region_name}</b> ({len(versions)} versions)</summary>\n\n')
-        html_parts.append('| Version | HyperOS | Android | Date | MD5 | Download |\n')
-        html_parts.append('|---------|---------|---------|------|-----|----------|\n')
+        html_parts.append(f'<summary><b>{flag} {region_name}</b> ({len(versions)} versions)</summary>\n\n')
+        html_parts.append('| Firmware Version | HyperOS | Android | Build Date | MD5 Checksum | Download |\n')
+        html_parts.append('|------------------|:-------:|:-------:|:----------:|:------------:|:--------:|\n')
         
         for v in versions:
             hyperos = v['hyperos'] if v['hyperos'] else '-'
             android = v['android'] if v['android'] else '-'
-            md5_short = v['md5'][:8] + '...' if v['md5'] and len(v['md5']) > 8 else '-'
-            html_parts.append(f"| `{v['version']}` | {hyperos} | {android} | {v['date']} | `{md5_short}` | [📥]({v['url']}) |\n")
+            md5_short = f"`{v['md5'][:8]}...`" if v['md5'] and len(v['md5']) > 8 else '-'
+            html_parts.append(f"| `{v['version']}` | **{hyperos}** | {android} | {v['date']} | {md5_short} | [📥 Download]({v['url']}) |\n")
         
         html_parts.append('\n</details>\n\n')
     
