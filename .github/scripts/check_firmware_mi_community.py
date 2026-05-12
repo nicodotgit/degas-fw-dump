@@ -245,7 +245,17 @@ def main():
         if info['version'].startswith('OS1.'):
             hyperos_version = "1.0"
         elif info['version'].startswith('OS2.'):
-            hyperos_version = "2.0"
+            parts = info['version'].split('.')
+            if len(parts) > 2:
+                build_num = parts[2]
+                if len(build_num) == 3 and build_num.startswith('1'):
+                    hyperos_version = "2.1"
+                elif len(build_num) == 3 and build_num.startswith('2'):
+                    hyperos_version = "2.2"
+                else:
+                    hyperos_version = "2.0"
+            else:
+                hyperos_version = "2.0"
         elif info['version'].startswith('OS3.'):
             parts = info['version'].split('.')
             if len(parts) > 2:

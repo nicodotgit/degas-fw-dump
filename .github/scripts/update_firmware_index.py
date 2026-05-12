@@ -99,16 +99,16 @@ def generate_firmware_index(releases):
             'version': version,
             'tag': tag,
             'url': f"https://github.com/{os.environ.get('GITHUB_REPOSITORY', 'nicodotgit/degas-fw-dump')}/releases/tag/{tag}",
-            'date': release['createdAt'][:10],
+            'date': manifest_data.get('date', release['createdAt'][:10]),
             'name': release['name'],
             'hyperos': manifest_data.get('hyperos_version', ''),
             'android': manifest_data.get('android_version', ''),
             'md5': manifest_data.get('md5', '')
         })
     
-    # Sort by version (newest first)
+    # Sort by build date (newest first)
     for region in by_region:
-        by_region[region].sort(key=lambda x: x['version'], reverse=True)
+        by_region[region].sort(key=lambda x: x['date'], reverse=True)
     
     # Region names mapping
     region_names = {
