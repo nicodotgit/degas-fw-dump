@@ -2,6 +2,19 @@
   "region": "tw",
   "versions": [
     {
+      "version": "OS3.0.302.0.WNETWXM",
+      "date": "2026-06-11",
+      "hyperos_version": "3.1",
+      "android_version": "16.0",
+      "md5": "",
+      "urls": [
+        "https://bn.d.miui.com/OS3.0.302.0.WNETWXM/degas_tw_global_images_OS3.0.302.0.WNETWXM_20260611.0000.00_16.0_tw_c1263ac0f6.tgz",
+        "https://bigota.d.miui.com/OS3.0.302.0.WNETWXM/degas_tw_global_images_OS3.0.302.0.WNETWXM_20260611.0000.00_16.0_tw_c1263ac0f6.tgz",
+        "https://hugeota.d.miui.com/OS3.0.302.0.WNETWXM/degas_tw_global_images_OS3.0.302.0.WNETWXM_20260611.0000.00_16.0_tw_c1263ac0f6.tgz",
+        "https://ultimateota.d.miui.com/OS3.0.302.0.WNETWXM/degas_tw_global_images_OS3.0.302.0.WNETWXM_20260611.0000.00_16.0_tw_c1263ac0f6.tgz?t=1783389564&s=dd025b096002684e949c3f216c97489c"
+      ]
+    },
+    {
       "version": "OS3.0.301.0.WNETWXM",
       "date": "2026-05-06",
       "hyperos_version": "3.1",
