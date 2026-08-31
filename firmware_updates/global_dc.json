@@ -2,6 +2,42 @@
   "region": "global_dc",
   "versions": [
     {
+      "version": "OS3.0.6.0.WNEMIDC",
+      "date": "2026-03-21",
+      "hyperos_version": "3.0",
+      "android_version": "16.0",
+      "md5": "",
+      "urls": [
+        "https://bigota.d.miui.com/OS3.0.6.0.WNEMIDC/degas_dc_global_images_OS3.0.6.0.WNEMIDC_20260321.0000.00_16.0_global_dc_6141a76109.tgz",
+        "https://hugeota.d.miui.com/OS3.0.6.0.WNEMIDC/degas_dc_global_images_OS3.0.6.0.WNEMIDC_20260321.0000.00_16.0_global_dc_6141a76109.tgz",
+        "https://bn.d.miui.com/OS3.0.6.0.WNEMIDC/degas_dc_global_images_OS3.0.6.0.WNEMIDC_20260321.0000.00_16.0_global_dc_6141a76109.tgz"
+      ]
+    },
+    {
+      "version": "OS3.0.3.0.WNEMIDC",
+      "date": "2026-01-07",
+      "hyperos_version": "3.0",
+      "android_version": "16.0",
+      "md5": "",
+      "urls": [
+        "https://bigota.d.miui.com/OS3.0.3.0.WNEMIDC/degas_dc_global_images_OS3.0.3.0.WNEMIDC_20260107.0000.00_16.0_global_dc_21e245542e.tgz",
+        "https://hugeota.d.miui.com/OS3.0.3.0.WNEMIDC/degas_dc_global_images_OS3.0.3.0.WNEMIDC_20260107.0000.00_16.0_global_dc_21e245542e.tgz",
+        "https://bn.d.miui.com/OS3.0.3.0.WNEMIDC/degas_dc_global_images_OS3.0.3.0.WNEMIDC_20260107.0000.00_16.0_global_dc_21e245542e.tgz"
+      ]
+    },
+    {
+      "version": "OS2.0.8.0.VNEMIDC",
+      "date": "2025-04-28",
+      "hyperos_version": "2.0",
+      "android_version": "15.0",
+      "md5": "",
+      "urls": [
+        "https://bigota.d.miui.com/OS2.0.8.0.VNEMIDC/degas_dc_global_images_OS2.0.8.0.VNEMIDC_20250428.0000.00_15.0_global_dc_ff7a928061.tgz",
+        "https://hugeota.d.miui.com/OS2.0.8.0.VNEMIDC/degas_dc_global_images_OS2.0.8.0.VNEMIDC_20250428.0000.00_15.0_global_dc_ff7a928061.tgz",
+        "https://bn.d.miui.com/OS2.0.8.0.VNEMIDC/degas_dc_global_images_OS2.0.8.0.VNEMIDC_20250428.0000.00_15.0_global_dc_ff7a928061.tgz"
+      ]
+    },
+    {
       "version": "OS2.0.5.0.VNEMIDC",
       "date": "2025-01-09",
       "hyperos_version": "2.0",
